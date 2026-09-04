@@ -36,6 +36,7 @@
 
 #include "G4ChargeExchange.hh"
 #include "G4ChargeExchangeXS.hh"
+#include "G4ChargeExchangeNP.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ParticleTable.hh"
@@ -65,7 +66,7 @@ namespace
 
 G4ChargeExchange::G4ChargeExchange(G4ChargeExchangeXS* ptr)
   : G4HadronicInteraction("ChargeExchange"),
-    fXSection(ptr), fYSection(ptr), fXSWeightFactor(1.0)
+    fXSection(nullptr), fYSection(nullptr), fXSWeightFactor(1.0), fYSWeightFactor(1.0)
 {
   lowEnergyLimit = 1.*CLHEP::MeV;
   secID = G4PhysicsModelCatalog::GetModelID( "model_ChargeExchange" );
@@ -75,7 +76,23 @@ G4ChargeExchange::G4ChargeExchange(G4ChargeExchangeXS* ptr)
     fXSWeightFactor = 1.0/fXSection->GetCrossSectionFactor();
   }
     if (nullptr != fYSection) {
-    fXSWeightFactor = 1.0/fYSection->GetCrossSectionFactor();
+    fYSWeightFactor = 1.0/fYSection->GetCrossSectionFactor();
+  }
+}
+
+G4ChargeExchange::G4ChargeExchange(G4ChargeExchangeNP* ptr)
+  : G4HadronicInteraction("ChargeExchange"),
+    fXSection(nullptr), fYSection(nullptr), fXSWeightFactor(1.0), fYSWeightFactor(1.0)
+{
+  lowEnergyLimit = 1.*CLHEP::MeV;
+  secID = G4PhysicsModelCatalog::GetModelID( "model_ChargeExchange" );
+  nist = G4NistManager::Instance();
+  fHandler = new G4ExcitationHandler();
+  if (nullptr != fXSection) {
+    fXSWeightFactor = 1.0/fXSection->GetCrossSectionFactor();
+  }
+    if (nullptr != fYSection) {
+    fYSWeightFactor = 1.0/fYSection->GetCrossSectionFactor();
   }
 }
 
@@ -84,8 +101,7 @@ G4ChargeExchange::~G4ChargeExchange()
   delete fHandler;
 }
 
-G4HadFinalState* G4ChargeExchange::ApplyYourself(
-		 const G4HadProjectile& aTrack, G4Nucleus& targetNucleus)
+G4HadFinalState* G4ChargeExchange::ApplyYourself(const G4HadProjectile& aTrack, G4Nucleus& targetNucleus)
 {
   theParticleChange.Clear();
   auto part = aTrack.GetDefinition();
@@ -97,6 +113,7 @@ G4HadFinalState* G4ChargeExchange::ApplyYourself(
   if (ekin <= lowEnergyLimit) {
     return &theParticleChange;
   }
+
   theParticleChange.SetWeightChange(fXSWeightFactor);
 
   G4int projPDG = part->GetPDGEncoding();
@@ -114,17 +131,20 @@ G4HadFinalState* G4ChargeExchange::ApplyYourself(
   G4double mass1 = G4NucleiProperties::GetNuclearMass(A, Z);
   G4LorentzVector lv0 = aTrack.Get4Momentum();
 
-  // select final state
-  const G4ParticleDefinition* theSecondary =
-    fXSection->SampleSecondaryType(part, aTrack.GetMaterial(),
-				   Z, A, aTrack.GetTotalEnergy());
+  // select final state neutron or other particles
+  const G4ParticleDefinition* theSecondary = nullptr;
+
+  if (projPDG == 2112 || projPDG == 2212){
+    if(fYSection == nullptr){return &theParticleChange;}
+    theSecondary = fYSection->SampleSecondaryType(part,aTrack.GetMaterial(),Z, A, aTrack.GetTotalEnergy());
+  }
+  else{
+    if(fXSection == nullptr){return &theParticleChange;}
+    theSecondary = fXSection->SampleSecondaryType(part, aTrack.GetMaterial(),Z, A, aTrack.GetTotalEnergy());
+  }
+
   G4int pdg = theSecondary->GetPDGEncoding();
 
-
-
-  // select final state for Neutron
-const G4ParticleDefinition* theSecondaryNP =
-    fYSection->SampleSecondaryType(part,aTrack.GetMaterial(),Z, A, aTrack.GetTotalEnergy());
 
 
 

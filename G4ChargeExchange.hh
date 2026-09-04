@@ -81,7 +81,7 @@ private:
 
   G4int secID;  // Creator model ID for the secondaries created by this model
   G4double lowEnergyLimit; // lowest limit to avoid numerical problems
-  G4double fXSWeightFactor;
+  G4double fXSWeightFactor, fYSWeightFactor;
 };
 
 #endif

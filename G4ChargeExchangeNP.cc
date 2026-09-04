@@ -54,6 +54,8 @@
 #include "G4ParticleTable.hh"
 #include "G4ThreeVector.hh"
 
+#include "G4Proton.hh"
+
 /*
 Debug info: 
 "G4ChargeExchangeNP Loaded"
@@ -98,7 +100,7 @@ G4double G4ChargeExchangeNP::GetElementCrossSection(const G4DynamicParticle* dp,
     G4cout << "fEnergyLimit: "<< fEnergyLimit << " pE: " << pE << " Z: " << Z << G4endl;
     G4cout << "GetCrossSection: " << GetCrossSection(dp->GetDefinition(), mat, Z, pE) << G4endl;
     
-    if (pE > fEnergyLimit){return GetCrossSection(dp->GetDefinition(), mat, Z, pE)}
+    if (pE > fEnergyLimit){return GetCrossSection(dp->GetDefinition(), mat, Z, pE);}
     else{return 0;}
 }
 
@@ -109,22 +111,22 @@ G4double G4ChargeExchangeNP::GetCrossSection(const G4ParticleDefinition* part, c
     
     const G4int Z = std::min(ZZ,ZMAXNUCLEARDATA);
     const G4int A = G4lrint(aeff[Z]);
-    G4double CrossSection = 0.0;
+    G4double SpecificSection = 0.0;
     G4int pdgN = part->GetPDGEncoding();
 
     G4double targetMass = CLHEP::proton_mass_c2;
     G4double projectileMass = part->GetPDGMass();
-    G4double lorentz_s = targetMass**2 + 2*projectileMass*targetMass + projectileMass**2
-    if(lorentz_s <= (targetMass + projectileMass)**2){return 0;}
+    G4double lorentz_s = targetMass*targetMass + 2*pEtot*targetMass + projectileMass*projectileMass;
+    if(lorentz_s <= (targetMass + projectileMass)*(targetMass + projectileMass)){return 0;}
 
     //Calculations for Neutron Cross Section (NOT DONE YET)
     if (pdgN == 2112){
-        G4double Z23 = g4calc->Z23(Z);
+        G4double z23 = g4calc->Z23(Z);
     }
 
 
-    G4cout  << "return function value: " << fFactor*CrossSection + 10 << G4endl;
-    return fFactor*CrossSection + 10;
+    G4cout  << "return function value: " << fFactor*SpecificSection + 10 << G4endl;
+    return (fFactor*SpecificSection + 10);
 }
 
 const G4ParticleDefinition* G4ChargeExchangeNP::SampleSecondaryType(const G4ParticleDefinition* part, const G4Material* mat, G4int Z, G4int A, G4double etot){
@@ -136,10 +138,10 @@ const G4ParticleDefinition* G4ChargeExchangeNP::SampleSecondaryType(const G4Part
 
     //NOT DONE YET
     if (pdgN == 2112){
-        G4double RandomNumberGen = (fFactor*CrossSection)*(G4UniformRand());
+        G4double RandomNumberGen = (fFactor*SpecificSection)*(G4UniformRand());
         G4cout << "RandomNumberGen: " << RandomNumberGen << G4endl;
         if (RandomNumberGen > 0){
-                pd = G4Proton::G4Proton();
+                pd = G4Proton::Proton();
         }
     }
     return pd;
