@@ -51,14 +51,18 @@ public:
     G4ChargeExchangeNP();
     ~G4ChargeExchangeNP() override = default;
 
-    //Pointer Functions
-    void SetCrossSectionFactor(G4double val) { fFactor = val; G4cout << "Printing factor:" << fFactor};
-
+    //Input Public Functions
+    void SetCrossSectionFactor(G4double val) {fFactor = val; G4cout << "Printing factor:" << fFactor;};
     G4double GetElementCrossSection(const G4DynamicParticle*, G4int Z, const G4Material*) final;
 
-private:
+    private:
+    //Output Private Functions
     G4double GetCrossSection(const G4ParticleDefinition*, const G4Material*, G4int Z, G4double etot);
+    const G4ParticleDefinition* SampleSecondaryType(const G4ParticleDefinition* part, const G4Material* mat, G4int Z, G4int A, G4double etot);
+    G4double SampleNeutron(const G4double etot, const G4double ltmax);
 
-    //variables
+    //Variables
     G4double fFactor{1.0};
-}
+};
+
+#endif

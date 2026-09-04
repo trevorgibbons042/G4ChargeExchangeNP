@@ -57,7 +57,11 @@
 /*
 Debug info: 
 "G4ChargeExchangeNP Loaded"
-"G4SAMPLESECONDARYTYPE IS WORKING!!"
+
+"GetCrossSection Loaded"
+"return function value: "
+
+"SampleSecondaryType loaded!"
 "RandomNumberGen: "
 */
 
@@ -77,23 +81,8 @@ namespace{
     const G4double beta_prime_pi = 1;
 }
 
-//Output Private Functions
-G4double G4ChargeExchange::GetElementCrossSection(const G4DynamicParticle* dp, G4int Z, const G4Material* mat)  
-{
-    G4double pE = dp->GetTotalEnergy();
-    G4cout << "fEnergyLimit: "<< fEnergyLimit << " pE: " << pE << " Z: " << Z << G4endl;
-    G4cout << "GetCrossSection: " << GetCrossSection(dp->GetDefinition(), mat, Z, pE) << G4endl;
-    
-    if (pE > fEnergyLimit){
-        return GetCrossSection(dp->GetDefinition(), mat, Z, pE)
-        }
-    else{
-        return 0;
-    }
-}
-
-//-----------------------------------------------------------
-G4ChargeExchangeXS::G4ChargeExchangeXS(){
+//Input Public Functions
+G4ChargeExchangeNP::G4ChargeExchangeNP(){
     G4cout  << "G4ChargeExchangeNP Loaded" << G4endl;
     
     g4calc = G4Pow::GetInstance();
@@ -102,7 +91,22 @@ G4ChargeExchangeXS::G4ChargeExchangeXS(){
     particleProton = table->FindParticle("proton");
 }
 
+//Output Private Functions
+G4double G4ChargeExchangeNP::GetElementCrossSection(const G4DynamicParticle* dp, G4int Z, const G4Material* mat)  
+{
+    G4double pE = dp->GetTotalEnergy();
+    G4cout << "fEnergyLimit: "<< fEnergyLimit << " pE: " << pE << " Z: " << Z << G4endl;
+    G4cout << "GetCrossSection: " << GetCrossSection(dp->GetDefinition(), mat, Z, pE) << G4endl;
+    
+    if (pE > fEnergyLimit){return GetCrossSection(dp->GetDefinition(), mat, Z, pE)}
+    else{return 0;}
+}
+
+//-----------------------------------------------------------
+
 G4double G4ChargeExchangeNP::GetCrossSection(const G4ParticleDefinition* part, const G4Material* mat, G4int ZZ, G4double pEtot){
+    G4cout  << "GetCrossSection Loaded" << G4endl;
+    
     const G4int Z = std::min(ZZ,ZMAXNUCLEARDATA);
     const G4int A = G4lrint(aeff[Z]);
     G4double CrossSection = 0.0;
@@ -119,18 +123,12 @@ G4double G4ChargeExchangeNP::GetCrossSection(const G4ParticleDefinition* part, c
     }
 
 
-
-
-
-
-
-
-
-    return fFactor*CrossSection + 10
+    G4cout  << "return function value: " << fFactor*CrossSection + 10 << G4endl;
+    return fFactor*CrossSection + 10;
 }
 
-const G4ParticleDefinition* G4ChargeExchangeXS::SampleSecondaryType(const G4ParticleDefinition* part, const G4Material* mat, G4int Z, G4int A, G4double etot){
-    G4cout << "G4SAMPLESECONDARYTYPE IS WORKING!!";
+const G4ParticleDefinition* G4ChargeExchangeNP::SampleSecondaryType(const G4ParticleDefinition* part, const G4Material* mat, G4int Z, G4int A, G4double etot){
+    G4cout << "SampleSecondaryType loaded!";
 
     const G4ParticleDefinition* pd = nullptr;
     G4int pdgN = part->GetPDGEncoding();
@@ -140,9 +138,13 @@ const G4ParticleDefinition* G4ChargeExchangeXS::SampleSecondaryType(const G4Part
     if (pdgN == 2112){
         G4double RandomNumberGen = (fFactor*CrossSection)*(G4UniformRand());
         G4cout << "RandomNumberGen: " << RandomNumberGen << G4endl;
-        if (pdgN==2112){
+        if (RandomNumberGen > 0){
                 pd = G4Proton::G4Proton();
         }
     }
     return pd;
+}
+
+G4double G4ChargeExchangeNP::SampleNeutron(const G4double etot, const G4double ltmax) const{
+   return 0;
 }

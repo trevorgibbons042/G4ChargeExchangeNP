@@ -69,7 +69,6 @@ private:
   G4double fXSFactor{1.0};
 };
 
-
 #endif
 
 

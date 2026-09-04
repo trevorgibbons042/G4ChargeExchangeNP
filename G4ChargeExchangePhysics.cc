@@ -30,13 +30,14 @@
 //
 // Author: 19 November 2008 V. Ivanchenko
 //
-// Modified:
+// Modified: September 4th, 2026, by Trevor Gibbons (Adding G4ChargeExchangeNP)
 //
 //----------------------------------------------------------------------------
 //
 
 #include "G4ChargeExchangePhysics.hh"
 
+#include "G4ChargeExchangeNP.hh"
 #include "G4ChargeExchangeXS.hh"
 #include "G4ChargeExchange.hh"
 
@@ -52,6 +53,8 @@
 #include "G4KaonPlus.hh"
 #include "G4KaonMinus.hh"
 #include "G4KaonZeroLong.hh"
+#include "G4Neutron.hh"
+#include "G4Proton.hh"
 #include "G4HadronicParameters.hh"
 #include "G4HadronInelasticProcess.hh"
 #include "G4ChargeExchangeMessenger.hh"
@@ -97,9 +100,12 @@ void G4ChargeExchangePhysics::ConstructProcess()
   auto xs = new G4ChargeExchangeXS();
   xs->SetEnergyLimit(fLowEnergyLimit);
   xs->SetCrossSectionFactor(10e6);
-  G4cout << "Cross section set SON!";
-
   auto model = new G4ChargeExchange(xs);
+  G4cout << "ChargeXS set ON!" << G4endl;
+
+  auto sChargeNP = new G4ChargeExchangeNP();
+  auto modelNP = new G4ChargeExchange(sChargeNP);
+  G4cout << "ChargeNP set ON!" << G4endl;
 
   if (G4HadronicParameters::Instance()->GetVerboseLevel() > 1) {
     G4cout << "### ChargeExchangePhysics Construct Processes with the model <" 
@@ -147,6 +153,14 @@ void G4ChargeExchangePhysics::ConstructProcess()
   proc = new G4HadronInelasticProcess(part->GetParticleName()+"ChargeEx", part);
   proc->AddDataSet( xs );
   proc->RegisterMe( model );
+  pman = part->GetProcessManager();
+  pman->AddDiscreteProcess(proc);
+
+  //Neutron
+  part = G4Neutron::Neutron();
+  proc = new G4HadronInelasticProcess(part->GetParticleName()+"ChargeExNP", part);
+  proc->AddDataSet(sChargeNP);
+  proc->RegisterMe(modelNP);
   pman = part->GetProcessManager();
   pman->AddDiscreteProcess(proc);
 }
