@@ -31,6 +31,7 @@
 // 25-Jul-06 V.Ivanchenko add 19 MeV low energy, below which S-wave is sampled
 // 12-Jun-12 A.Ribon fix warnings of shadowed variables
 // 06-Aug-15 A.Ribon migrating to G4Exp, G4Log and G4Pow
+//Modified: September 4th, 2026. Trevor Gibbons. Adding ChargeExchangeNP
 //
 
 #include "G4ChargeExchange.hh"
@@ -64,7 +65,7 @@ namespace
 
 G4ChargeExchange::G4ChargeExchange(G4ChargeExchangeXS* ptr)
   : G4HadronicInteraction("ChargeExchange"),
-    fXSection(ptr), fXSWeightFactor(1.0)
+    fXSection(ptr), fYSection(ptr), fXSWeightFactor(1.0)
 {
   lowEnergyLimit = 1.*CLHEP::MeV;
   secID = G4PhysicsModelCatalog::GetModelID( "model_ChargeExchange" );
@@ -72,6 +73,9 @@ G4ChargeExchange::G4ChargeExchange(G4ChargeExchangeXS* ptr)
   fHandler = new G4ExcitationHandler();
   if (nullptr != fXSection) {
     fXSWeightFactor = 1.0/fXSection->GetCrossSectionFactor();
+  }
+    if (nullptr != fYSection) {
+    fXSWeightFactor = 1.0/fYSection->GetCrossSectionFactor();
   }
 }
 
@@ -116,8 +120,30 @@ G4HadFinalState* G4ChargeExchange::ApplyYourself(
 				   Z, A, aTrack.GetTotalEnergy());
   G4int pdg = theSecondary->GetPDGEncoding();
 
+
+
+  // select final state for Neutron
+const G4ParticleDefinition* theSecondaryNP =
+    fYSection->SampleSecondaryType(part,aTrack.GetMaterial(),Z, A, aTrack.GetTotalEnergy());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (verboseLevel > 1)
     G4cout << "    Secondary " << theSecondary->GetParticleName() << "  pdg=" << pdg << G4endl;
+
 
   // omega(782) and f2(1270)
   G4bool isShortLived = (pdg == 223 || pdg == 225);

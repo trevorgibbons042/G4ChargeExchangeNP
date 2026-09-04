@@ -75,6 +75,7 @@ private:
   G4bool SampleMass(G4double& mass, const G4double width, const G4double elim);
   
   G4ChargeExchangeXS* fXSection;
+  G4ChargeExchangeNP* fYSection;
   G4ExcitationHandler* fHandler;
   G4NistManager* nist;
 
