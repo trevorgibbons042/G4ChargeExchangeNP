@@ -93,6 +93,8 @@ G4ChargeExchangeNP::G4ChargeExchangeNP(){
     particleProton = table->FindParticle("proton");
 }
 
+G4bool G4ChargeExchangeNP::IsElementApplicable(const G4DynamicParticle*, G4int, const G4Material*){return true;}
+
 //Output Private Functions
 G4double G4ChargeExchangeNP::GetElementCrossSection(const G4DynamicParticle* dp, G4int Z, const G4Material* mat)  
 {
@@ -103,6 +105,7 @@ G4double G4ChargeExchangeNP::GetElementCrossSection(const G4DynamicParticle* dp,
     if (pE > fEnergyLimit){return GetCrossSection(dp->GetDefinition(), mat, Z, pE);}
     else{return 0;}
 }
+
 
 //-----------------------------------------------------------
 
@@ -138,11 +141,9 @@ const G4ParticleDefinition* G4ChargeExchangeNP::SampleSecondaryType(const G4Part
 
     //NOT DONE YET
     if (pdgN == 2112){
-        G4double RandomNumberGen = (fFactor*SpecificSection)*(G4UniformRand());
+        G4double RandomNumberGen = (fFactor*SpecificSection+10)*(G4UniformRand());
         G4cout << "RandomNumberGen: " << RandomNumberGen << G4endl;
-        if (RandomNumberGen > 0){
-                pd = G4Proton::Proton();
-        }
+        if (RandomNumberGen > 0){pd = G4Proton::Proton();}
     }
     return pd;
 }

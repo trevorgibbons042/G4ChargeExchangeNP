@@ -56,6 +56,7 @@ public:
     G4double GetElementCrossSection(const G4DynamicParticle*, G4int Z, const G4Material*) final;
     G4double GetCrossSectionFactor() const { return fFactor; };
     const G4ParticleDefinition* SampleSecondaryType(const G4ParticleDefinition* part, const G4Material* mat, G4int Z, G4int A, G4double etot);
+    G4bool IsElementApplicable(const G4DynamicParticle*, G4int Z, const G4Material*) final;
 
     private:
     //Output Private Functions
@@ -65,7 +66,7 @@ public:
     //Variables
     const G4ParticleDefinition* particleNeutron;
     const G4ParticleDefinition* particleProton;
-    G4double fFactor{1.0}, fEnergyLimit{0.0};
+    G4double fFactor{1.0}, fEnergyLimit{1.0};
     G4double SpecificSection = 0.0;
     G4Pow* g4calc;
 };
