@@ -93,7 +93,8 @@ G4ChargeExchangeNP::G4ChargeExchangeNP(){
     particleProton = table->FindParticle("proton");
 }
 
-G4bool G4ChargeExchangeNP::IsElementApplicable(const G4DynamicParticle*, G4int, const G4Material*){return true;}
+G4bool G4ChargeExchangeNP::IsElementApplicable(const G4DynamicParticle* , G4int Z, const G4Material*){return true;}
+G4bool G4ChargeExchangeNP::IsIsoApplicable(const G4DynamicParticle* particle, G4int Z, G4int A, const G4Element*, const G4Material*){return false;}
 
 //Output Private Functions
 G4double G4ChargeExchangeNP::GetElementCrossSection(const G4DynamicParticle* dp, G4int Z, const G4Material* mat)  
@@ -102,7 +103,8 @@ G4double G4ChargeExchangeNP::GetElementCrossSection(const G4DynamicParticle* dp,
     G4cout << "fEnergyLimit: "<< fEnergyLimit << " pE: " << pE << " Z: " << Z << G4endl;
     G4cout << "GetCrossSection: " << GetCrossSection(dp->GetDefinition(), mat, Z, pE) << G4endl;
     
-    if (pE > fEnergyLimit){return GetCrossSection(dp->GetDefinition(), mat, Z, pE);}
+    if (Z == 1){return 0;}
+    else if (pE > fEnergyLimit){return GetCrossSection(dp->GetDefinition(), mat, Z, pE);}
     else{return 0;}
 }
 
@@ -125,10 +127,12 @@ G4double G4ChargeExchangeNP::GetCrossSection(const G4ParticleDefinition* part, c
     //Calculations for Neutron Cross Section (NOT DONE YET)
     if (pdgN == 2112){
         G4double z23 = g4calc->Z23(Z);
+        SpecificSection = z23;
     }
 
 
     G4cout  << "return function value: " << fFactor*SpecificSection + 10 << G4endl;
+    G4cout  << "" << G4endl;
     return (fFactor*SpecificSection + 10);
 }
 

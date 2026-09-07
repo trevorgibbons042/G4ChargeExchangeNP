@@ -74,14 +74,15 @@ private:
 
   G4bool SampleMass(G4double& mass, const G4double width, const G4double elim);
   
-  G4ChargeExchangeXS* fXSection;
-  G4ChargeExchangeNP* fYSection;
+  G4ChargeExchangeXS* fXSection = nullptr;
+  G4ChargeExchangeNP* fYSection = nullptr;
   G4ExcitationHandler* fHandler;
   G4NistManager* nist;
 
   G4int secID;  // Creator model ID for the secondaries created by this model
   G4double lowEnergyLimit; // lowest limit to avoid numerical problems
-  G4double fXSWeightFactor, fYSWeightFactor;
+  G4double fXSWeightFactor = 1.0;
+  G4double fYSWeightFactor = 1.0;
 };
 
 #endif
