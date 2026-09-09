@@ -73,14 +73,13 @@ GetCrossSection is set to constant value, no calculations yet.
 */
 
 namespace{
-    //Lyubovitsky parameterisation
-    const G4double pA = 1;
-    const G4double pAlpha = 1;
-    const G4double g0 = 1;
-    const G4double g = 1;
-    const G4double c0 = 1;
-    const G4double c = 1;
-    const G4double beta_prime_pi = 1;
+    //Lyubovitsky parameterisation from Barton et al. 1976
+    const G4double pA = 1523.8;
+    const G4double pAlpha = .20096;
+    const G4double g0 = 0.03129;
+    const G4double g1 = -.0084418;
+    const G4double c0 = -7.6817;
+    const G4double c1 = 0.5507;
 }
 
 //Input Public Functions
@@ -101,13 +100,11 @@ G4double G4ChargeExchangeNP::GetElementCrossSection(const G4DynamicParticle* dp,
 {
     G4double pE = dp->GetTotalEnergy();
     G4cout << "fEnergyLimit: "<< fEnergyLimit << " pE: " << pE << " Z: " << Z << G4endl;
-    G4cout << "GetCrossSection: " << GetCrossSection(dp->GetDefinition(), mat, Z, pE) << G4endl;
     
     if (Z == 1){return 0;}
     else if (pE > fEnergyLimit){return GetCrossSection(dp->GetDefinition(), mat, Z, pE);}
     else{return 0;}
 }
-
 
 //-----------------------------------------------------------
 
@@ -116,24 +113,41 @@ G4double G4ChargeExchangeNP::GetCrossSection(const G4ParticleDefinition* part, c
     
     const G4int Z = std::min(ZZ,ZMAXNUCLEARDATA);
     const G4int A = G4lrint(aeff[Z]);
-    G4double SpecificSection = 0.0;
+    G4double sum = 0;
     G4int pdgN = part->GetPDGEncoding();
 
     G4double targetMass = CLHEP::proton_mass_c2;
     G4double projectileMass = part->GetPDGMass();
     G4double lorentz_s = targetMass*targetMass + 2*pEtot*targetMass + projectileMass*projectileMass;
+    G4cout << "lorentz_s: "<<lorentz_s << G4endl << G4endl; 
     if(lorentz_s <= (targetMass + projectileMass)*(targetMass + projectileMass)){return 0;}
 
     //Calculations for Neutron Cross Section (NOT DONE YET)
     if (pdgN == 2112){
         G4double z23 = g4calc->Z23(Z);
-        SpecificSection = z23;
+        G4double S_S0 = lorentz_s*(1/(10*CLHEP::GeV*CLHEP::GeV));
+        G4cout << "S_S0: "<< S_S0 << G4endl << G4endl; 
+        G4double logS_S0 = G4Log(S_S0);
+
+        G4double Gtotal = std::max(0.0, 1+g0 + g1*logS_S0);
+        G4cout << "g factor here!: " << Gtotal << G4endl << G4endl;
+
+        G4double Ctotal = std::max(1e-16, 1+c0 + c1*logS_S0);
+        G4cout << "c factor here!: " << Ctotal << G4endl << G4endl;
+
+        G4double Afactortotal = pA*g4calc->powA(S_S0, 2*pAlpha-2);
+        G4cout << "A factor here!: " << Afactortotal << G4endl << G4endl;
+
+        G4double Ztotal = z23*g4calc->powZ(Z, -.15*g4calc->powZ(Z,-2/3));
+        G4cout << "Z factor here!: " << Ztotal << G4endl << G4endl;
+
+        G4double sumFactor = (10e-30)*Afactortotal*Ztotal*(1+Gtotal)/(Ctotal);
+        G4cout << "sum factor here:" << sumFactor << G4endl <<G4endl;
+
+        G4cout  << "return function value: " << fFactor*sumFactor << G4endl;
+        return (fFactor*sumFactor);
     }
-
-
-    G4cout  << "return function value: " << fFactor*SpecificSection + 10 << G4endl;
-    G4cout  << "" << G4endl;
-    return (fFactor*SpecificSection + 10);
+    else{return 0;}
 }
 
 const G4ParticleDefinition* G4ChargeExchangeNP::SampleSecondaryType(const G4ParticleDefinition* part, const G4Material* mat, G4int Z, G4int A, G4double etot){
@@ -145,7 +159,7 @@ const G4ParticleDefinition* G4ChargeExchangeNP::SampleSecondaryType(const G4Part
 
     //NOT DONE YET
     if (pdgN == 2112){
-        G4double RandomNumberGen = (fFactor*SpecificSection+10)*(G4UniformRand());
+        G4double RandomNumberGen = (fFactor)*(G4UniformRand());
         G4cout << "RandomNumberGen: " << RandomNumberGen << G4endl;
         if (RandomNumberGen > 0){pd = G4Proton::Proton();}
     }

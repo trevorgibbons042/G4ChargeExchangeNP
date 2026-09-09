@@ -68,7 +68,7 @@ public:
     //Variables
     const G4ParticleDefinition* particleNeutron;
     const G4ParticleDefinition* particleProton;
-    G4double fFactor{1.0}, fEnergyLimit{10.0 * CLHEP::MeV};
+    G4double fFactor{3e5}, fEnergyLimit{10.0 * CLHEP::MeV};
     G4double SpecificSection = 0.0;
     G4Pow* g4calc;
 };
