@@ -98,25 +98,17 @@ G4ChargeExchange::~G4ChargeExchange()
 
 G4HadFinalState* G4ChargeExchange::ApplyYourself(const G4HadProjectile& aTrack, G4Nucleus& targetNucleus)
 {
-  G4cout << "NP DEBUG START ApplyYourself" << G4endl;
   theParticleChange.Clear();
   auto part = aTrack.GetDefinition();
   G4double ekin = aTrack.GetKineticEnergy();
 
-  G4cout << "STEP 1" << G4endl;
   G4int A = targetNucleus.GetA_asInt();
   G4int Z = targetNucleus.GetZ_asInt();
   
-  G4cout << "STEP 2" << G4endl;
-  if (ekin <= lowEnergyLimit) {
-    G4cout << "STEP 3" << G4endl;
-    return &theParticleChange;
-  }
+  if (ekin <= lowEnergyLimit) {return &theParticleChange;}
 
-  G4cout << "STEP 4" << G4endl;
   theParticleChange.SetWeightChange(fYSWeightFactor);
 
-  G4cout << "STEP 5" << G4endl;
   G4int projPDG = part->GetPDGEncoding();
   // for hydrogen targets and positive projectile change exchange
   // is not possible on proton, only on deuteron
@@ -129,17 +121,14 @@ G4HadFinalState* G4ChargeExchange::ApplyYourself(const G4HadProjectile& aTrack, 
 	   << G4endl;
   }
 
-  G4cout << "STEP 6" << G4endl;
   G4double mass1 = G4NucleiProperties::GetNuclearMass(A, Z);
   G4LorentzVector lv0 = aTrack.Get4Momentum();
 
   // select final state neutron or other particles
-  G4cout << "STEP 7" << G4endl;
   const G4ParticleDefinition* theSecondary = nullptr;
 
   if (fYSection != nullptr){
     if (projPDG == 2112 || projPDG == 2212 || Z != 1){
-      G4cout << "STEP 9" << G4endl;
       theSecondary = fYSection->SampleSecondaryType(part,aTrack.GetMaterial(),Z, A, aTrack.GetTotalEnergy());
   }
 }
@@ -149,6 +138,7 @@ G4HadFinalState* G4ChargeExchange::ApplyYourself(const G4HadProjectile& aTrack, 
 
 if (theSecondary == nullptr){return &theParticleChange;}
 
+if (verboseLevel > 1) {
   G4cout << "NP DEBUG 1:"
        << " projPDG=" << projPDG
        << " secondary=" << theSecondary->GetParticleName()
@@ -156,13 +146,12 @@ if (theSecondary == nullptr){return &theParticleChange;}
        << " Z=" << Z
        << " A=" << A
        << G4endl;
+  }
 
   G4int pdg = theSecondary->GetPDGEncoding();
 
-
-  if (verboseLevel > 1)
-    G4cout << "    Secondary " << theSecondary->GetParticleName() << "  pdg=" << pdg << G4endl;
-
+  if (verboseLevel > 1){
+    G4cout << "    Secondary " << theSecondary->GetParticleName() << "  pdg=" << pdg << G4endl;}
 
   // omega(782) and f2(1270)
   G4bool isShortLived = (pdg == 223 || pdg == 225);
@@ -174,41 +163,40 @@ if (theSecondary == nullptr){return &theParticleChange;}
   else if (projPDG == 321) { ++Z; }
   else if (projPDG == 130) {
     if (theSecondary->GetPDGCharge() > 0.0) { --Z; }
-    else { ++Z; }}
+    else { ++Z; }
+  }
 
   // NP version of atomic number of the recoild nucleus
   else if (projPDG == 2112 && pdg == 2212) {--Z;
+  if (verboseLevel > 1) {
   G4cout << "NP DEBUG 2: neutron -> proton"
            << " residual Z=" << Z
            << " A=" << A
-           << G4endl;}
+           << G4endl;}}
   // proton -> neutron (if you want that to happen)
-  else if (projPDG == 2212 && pdg == 2112) {G4cout << "STEP 2.1" << G4endl; ++Z;}
-  else {G4cout << "STEP 2.2" << G4endl; return &theParticleChange;}
+  else if (projPDG == 2212 && pdg == 2112) {++Z;}
+  else {return &theParticleChange;}
 
   // recoil nucleus
-  G4cout << "STEP 2.3" << G4endl;
   const G4ParticleDefinition* theRecoil = nullptr;
-  if (Z == 0 && A == 1) { G4cout << "STEP 2.4" << G4endl;theRecoil = G4Neutron::Neutron(); }
-  else if (Z == 1 && A == 1) { G4cout << "STEP 2.5" << G4endl;theRecoil = G4Proton::Proton(); }
-  else if (Z == 1 && A == 2) { G4cout << "STEP 2.6" << G4endl;theRecoil = G4Deuteron::Deuteron(); }
-  else if (Z == 1 && A == 3) { G4cout << "STEP 2.7" << G4endl;theRecoil = G4Triton::Triton(); }
-  else if (Z == 2 && A == 3) {G4cout << "STEP 2.8" << G4endl; theRecoil = G4He3::He3(); }
-  else if (Z == 2 && A == 4) {G4cout << "STEP 2.9" << G4endl; theRecoil = G4Alpha::Alpha(); }
+  if (Z == 0 && A == 1) {theRecoil = G4Neutron::Neutron(); }
+  else if (Z == 1 && A == 1) {theRecoil = G4Proton::Proton(); }
+  else if (Z == 1 && A == 2) {theRecoil = G4Deuteron::Deuteron(); }
+  else if (Z == 1 && A == 3) {theRecoil = G4Triton::Triton(); }
+  else if (Z == 2 && A == 3) {theRecoil = G4He3::He3(); }
+  else if (Z == 2 && A == 4) {theRecoil = G4Alpha::Alpha(); }
 
   // check if there is enough energy for the final state
   // and sample mass of produced state
   // sample kinematics
-  G4cout << "STEP 2.10" << G4endl;
   G4LorentzVector lv1(0.0, 0.0, 0.0, mass1);
   G4LorentzVector lv = lv0 + lv1;
   G4double m0 = lv.mag();
-  G4cout << "STEP 2.11" << G4endl;
+
   const G4double mass0 = theSecondary->GetPDGMass();
   G4double mass2 = mass0;
   G4double mass3;
   G4bool ok = false;
-  G4cout << "STEP 2.12" << G4endl;
 
   if (verboseLevel > 1) {
     G4cout << " Secondary meson " << theSecondary->GetParticleName()
@@ -217,20 +205,17 @@ if (theSecondary == nullptr){return &theParticleChange;}
 	   << "  " << lv
 	   << G4endl;
   }
-  G4cout << "STEP 2.13" << G4endl;
   // fixed recoil mass
   if (nullptr != theRecoil) {
-      G4cout << "STEP 2.14" << G4endl;
     mass3 = theRecoil->GetPDGMass();
     ok = (m0 > mass2 + mass3);
 
     // excited nuclear state, CHECK HERE FOR ISSUES
   } else {
-      G4cout << "STEP 2.15" << G4endl;
     G4double mass30 = G4NucleiProperties::GetNuclearMass(A, Z);
     
     if (m0 <= mass2 + mass30) {
-        G4cout << "NP DEBUG: GROUND-STATE KINEMATICS FAILED"
+        G4cout << "NP DEBUG 3: GROUND-STATE KINEMATICS FAILED"
                << " m0=" << m0/MeV
                << " mass2=" << mass2/MeV
                << " mass30=" << mass30/MeV
@@ -245,35 +230,28 @@ if (theSecondary == nullptr){return &theParticleChange;}
     
     const G4double eFermi = 10*CLHEP::MeV;
     for (G4int i=0; i<10; ++i) {
-      G4cout << "STEP 2.15.1" << G4endl;
       mass3 = mass30 + eFermi*G4UniformRand();
-      G4cout << "STEP 2.15.2" << G4endl;
       if (m0 > mass2 + mass3) {
-  G4cout << "STEP 2.15.3" << G4endl;      
 	ok = true;
 	break;
       }
-    G4cout << "STEP 2.15.4" << G4endl;
     }
-  G4cout << "STEP 2.15.5" << G4endl;
   }
 
   if (isShortLived) {
-      G4cout << "STEP 2.1y" << G4endl;
     const G4double elim = 300*CLHEP::MeV;
     ok = false;
     for (G4int i=0; i<10; ++i) {
-      if (SampleMass(mass2, theSecondary->GetPDGWidth(), elim)) {  G4cout << "STEP 2.17" << G4endl;
-        if (m0 > mass2 + mass3) {  G4cout << "STEP 2.18" << G4endl;
+      if (SampleMass(mass2, theSecondary->GetPDGWidth(), elim)) {
+        if (m0 > mass2 + mass3) {
 	  ok = true;
 	  break;
 	}
       }
     }
   }
-G4cout << "STEP 2.19" << G4endl;
   // not possible kinematically
-  if (!ok) {    G4cout << "NP DEBUG: KINEMATICS FAILED"
+  if (!ok) {    G4cout << "NP DEBUG 4: KINEMATICS FAILED"
            << " m0=" << m0/MeV
            << " mass2=" << mass2/MeV
            << " mass3=" << mass3/MeV
@@ -282,47 +260,80 @@ G4cout << "STEP 2.19" << G4endl;
            << G4endl;
      return &theParticleChange; }
 
-     G4cout << "STEP 2.20" << G4endl;
   G4double e2 = (m0*m0 + mass2*mass2 - mass3*mass3)/(2*m0);
   G4double momentumCMS = std::sqrt(e2*e2 - mass2*mass2);
   G4double tmax = 4*momentumCMS*momentumCMS; 
 
-  G4cout << "STEP 2.21" << G4endl;
   // for projectile pion t depends on final state
   G4double t;
   if (fXSection != nullptr && fXSection->isPion()) {
-    G4cout << "STEP 2.22" << G4endl;
     t = fXSection->SampleTforPion(aTrack.GetTotalEnergy(), tmax);
   }
   else{
-    G4cout << "STEP 2.23" << G4endl;
     t = SampleT(theSecondary, A, tmax);
   } 
   
-  G4cout << "STEP 2.24" << G4endl;
-  G4double phi = G4UniformRand()*CLHEP::twopi;
-  G4double cost = 1. - 2.0*t/tmax;
+
+
+
+  // t and phi!!!!
+  G4double scalingFactor = 100;
+
+  G4double phi_init = G4UniformRand()*CLHEP::twopi;
+  G4double theta_init = (scalingFactor)*2.0*t/tmax;
+  G4double cost = 1. - theta_init;
+  G4cout <<" phi_init: "<< phi_init << G4endl;
 
   // if cos(theta) negative, there is a numerical problem
-  // instead of making scattering backward, make in this case
-  // no scattering
-  G4cout << "STEP 2.25" << G4endl;
+  // instead of making scattering backward, make in this case no scattering
   if (std::abs(cost) > 1.0) { cost = 1.0; }
-
-  G4cout << "STEP 2.26" << G4endl;
   G4double sint = std::sqrt((1.0 - cost)*(1.0 + cost));
 
   if (verboseLevel > 1) {
     G4cout << " t= " << t << " tmax(GeV^2)= " << tmax/(GeV*GeV) 
 	   << " cos(t)=" << cost << " sin(t)=" << sint << G4endl;
   }
-  G4cout << "STEP 2.27" << G4endl;
-  G4LorentzVector lv2(momentumCMS*sint*std::cos(phi),
-		      momentumCMS*sint*std::sin(phi),
+//polarization
+  G4double pbeam = ((aTrack.Get4Momentum()).vect()).mag();
+  G4ThreeVector polarization = aTrack.GetPolarization();
+  const G4ThreeVector normal = aTrack.GetMomentumDirection().unit();
+  G4ThreeVector projected = polarization - polarization.dot(normal) * normal;
+
+  G4double mag_proj = projected.mag();
+  G4double cos_phi_init = std::cos(phi_init);
+  G4double AnalyzingPower = -(0.7079)*(1-std::exp(1-pbeam)*std::sqrt(t));
+
+  G4double phi_new;
+  while (true)
+    {
+        phi_new = G4UniformRand()*CLHEP::twopi;
+
+        G4double w = 1.0 + (AnalyzingPower*mag_proj*std::cos(phi_new));
+        G4double wmax = 1.0 + std::abs(AnalyzingPower*mag_proj);
+
+        if (G4UniformRand() < w / wmax){break;}
+    }
+
+  G4LorentzVector lv2(momentumCMS*sint*std::cos(phi_new),
+		      momentumCMS*sint*std::sin(phi_new),
 		      momentumCMS*cost, e2);
 
-  G4cout << "STEP 2.28" << G4endl;
-  // kinematics in the final state, may be a warning should be added if 
+  if (verboseLevel > 1) {
+  G4cout <<"pbeam: "<< pbeam << G4endl;
+  G4cout <<" Polarization: "<< polarization << G4endl;
+  G4cout <<" Normal Vector: "<< normal << G4endl;
+  G4cout << "projected vector: "<< projected << G4endl;
+  G4cout << "cos(phi): "<< cos_phi_init << G4endl;
+  G4cout << "AnalyzingPower: "<< AnalyzingPower << G4endl;
+  G4cout << "G4LorentzVector for Proton: "<< lv2 << G4endl;
+  G4cout << "Phi_new: "<< phi_new << G4endl;
+
+  G4LorentzVector lvdiff(momentumCMS*sint*std::cos(phi_init),
+		      momentumCMS*sint*std::sin(phi_init),
+		      momentumCMS*cost, e2);
+  G4cout << "G4LorentzVector for Proton (ORIGINAL!): "<< lvdiff << G4endl;
+  }
+
   G4ThreeVector bst = lv.boostVector();
   lv2.boost(bst);
   lv -= lv2;
@@ -330,36 +341,36 @@ G4cout << "STEP 2.19" << G4endl;
     lv.setE(mass3);
   }
 
-  G4cout << "STEP 2.29" << G4endl;
+
   // prepare secondary particles
-  G4cout << "NP DEBUG 3: MADE IT TO FINAL STATE"
-       << G4endl;
+  if (verboseLevel > 1) {
+  G4cout << "NP DEBUG 5: MADE IT TO FINAL STATE"
+       << G4endl;}
+
   theParticleChange.SetStatusChange(stopAndKill);
   theParticleChange.SetEnergyChange(0.0);
   if (fYSection !=nullptr){theParticleChange.SetWeightChange(fYSWeightFactor);}
   else if(fXSection !=nullptr){theParticleChange.SetWeightChange(fXSWeightFactor);}
 
-  G4cout << "STEP 3.1" << G4endl;
-
+  //ADDING SECONDARY!!!!
   if (!isShortLived) {
-    G4cout << "STEP 3.2" << G4endl;
     auto aSec = new G4DynamicParticle(theSecondary, lv2);
     theParticleChange.AddSecondary(aSec, secID);
-    G4cout << "STEP 3.3" << G4endl;
-    G4cout << "NP DEBUG 4: added secondary "
+    
+    if (verboseLevel > 1) {
+    G4cout << "NP DEBUG 6: added secondary "
        << theSecondary->GetParticleName()
        << " E=" << lv2.e()/MeV << " MeV"
        << " P=" << lv2.vect().mag()/MeV << " MeV/c"
-       << G4endl;
+       << G4endl;}
+
+
   } else {
-    G4cout << "STEP 3.4" << G4endl;
     auto channel = theSecondary->GetDecayTable()->SelectADecayChannel(mass2);
     auto products = channel->DecayIt(mass2);
     G4ThreeVector bst1 = lv2.boostVector();
     G4int N = products->entries();
-    G4cout << "STEP 3.5" << G4endl;
     for (G4int i=0; i<N; ++i) {
-      G4cout << "STEP 3.6" << G4endl;
       auto p = (*products)[i];
       auto lvp = p->Get4Momentum();
       lvp.boost(bst1);
@@ -367,39 +378,31 @@ G4cout << "STEP 2.19" << G4endl;
       pnew->Set4Momentum(lvp);
       theParticleChange.AddSecondary(pnew, secID);
     }
-    G4cout << "STEP 3.7" << G4endl;
     delete products;
   }
 
-
-
-
-
   // recoil is a stable isotope
   if (nullptr != theRecoil) {
-    G4cout << "NP DEBUG 5: recoil"
+    if (verboseLevel > 1) {
+    G4cout << "NP DEBUG 7: recoil"
        << " Z=" << Z
        << " A=" << A
        << " E=" << lv.e()/MeV << " MeV"
        << " P=" << lv.vect().mag()/MeV << " MeV/c"
-       << G4endl;
+       << G4endl;}
     auto aRec = new G4DynamicParticle(theRecoil, lv);
     theParticleChange.AddSecondary(aRec, secID);
   } else {
     // recoil is a fragment, which may be unstable
-    G4cout << "STEP 3.8" << G4endl;
     G4Fragment frag(A, Z, lv);
     auto products = fHandler->BreakItUp(frag);
     for (auto & prod : *products) {
-      G4cout << "STEP 3.9" << G4endl;
       auto dp = new G4DynamicParticle(prod->GetDefinition(), prod->GetMomentum());
       theParticleChange.AddSecondary(dp, secID);
       delete prod;
     }
-    G4cout << "STEP 3.10" << G4endl;
     delete products;
   }
-  G4cout << "STEP 3.11" << G4endl;
   return &theParticleChange;
 }
 

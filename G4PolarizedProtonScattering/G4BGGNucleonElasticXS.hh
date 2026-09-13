@@ -103,7 +103,7 @@ private:
   static G4double theCoulombFacP[93];
   static G4double theGlauberFacN[93];
   static G4double theCoulombFacN[93];
-  static G4int    theA[93];
+  static G4int theA[93];
 
   const G4ParticleDefinition* theProton;
   G4ComponentGGHadronNucleusXsc* fGlauber;

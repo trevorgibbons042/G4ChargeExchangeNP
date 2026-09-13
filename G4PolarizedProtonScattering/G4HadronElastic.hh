@@ -24,8 +24,7 @@
 // ********************************************************************
 //
 //
-//
-// Geant4 Header : G4ChipsElasticModel
+// Geant4 Header : G4HadronElastic
 //
 // Author : V.Ivanchenko 29 June 2009 (redesign old elastic model)
 //  
@@ -35,44 +34,79 @@
 // Default model for elastic scattering; GHEISHA algorithm is used 
 // Class Description - End
 
-#ifndef G4ChipsElasticModel_h
-#define G4ChipsElasticModel_h 1
+#ifndef G4HadronElastic_h
+#define G4HadronElastic_h 1
  
-#include "G4HadronElastic.hh"
 #include "globals.hh"
-#include "G4ChipsProtonElasticXS.hh"
-#include "G4ChipsNeutronElasticXS.hh"
-#include "G4ChipsAntiBaryonElasticXS.hh"
-#include "G4ChipsPionPlusElasticXS.hh"
-#include "G4ChipsPionMinusElasticXS.hh"
-#include "G4ChipsKaonPlusElasticXS.hh"
-#include "G4ChipsKaonMinusElasticXS.hh"
+#include "G4HadronicInteraction.hh"
+#include "G4HadProjectile.hh"
+#include "G4Nucleus.hh"
+#include "G4NucleiProperties.hh"
 
+class G4ParticleDefinition;
 
-class G4ChipsElasticModel : public G4HadronElastic
+class G4HadronElastic : public G4HadronicInteraction
 {
 public:
 
-  G4ChipsElasticModel();
+  explicit G4HadronElastic(const G4String& name = "hElasticLHEP");
 
-  virtual ~G4ChipsElasticModel();
+  ~G4HadronElastic() override;
  
-  virtual G4double SampleInvariantT(const G4ParticleDefinition* p, 
-				    G4double plab,
-				    G4int Z, G4int A);
-  virtual void ModelDescription(std::ostream&) const;
+  // implementation of the G4HadronicInteraction interface
+  G4HadFinalState* ApplyYourself(const G4HadProjectile & aTrack, 
+				 G4Nucleus & targetNucleus) override;
+
+  // sample momentum transfer using Lab. momentum
+  G4double SampleInvariantT(const G4ParticleDefinition* p, G4double plab,
+			    G4int Z, G4int A) override;
+  
+  G4double GetSlopeCof( const G4int pdg );
+
+  inline void SetLowestEnergyLimit(G4double value);
+
+  inline G4double LowestEnergyLimit() const;
+
+  inline G4double ComputeMomentumCMS(const G4ParticleDefinition* p, 
+				     G4double plab, G4int Z, G4int A);
+  
+  void ModelDescription(std::ostream&) const override;
+
+
+protected:
+
+  G4double pLocalTmax;
+  G4int secID;  // Creator model ID for the recoil
 
 private:
 
-  G4ChipsProtonElasticXS* pxsManager;
-  G4ChipsNeutronElasticXS* nxsManager;
+  G4ParticleDefinition* theProton;
+  G4ParticleDefinition* theNeutron;
+  G4ParticleDefinition* theDeuteron;
+  G4ParticleDefinition* theAlpha;
 
-  G4ChipsAntiBaryonElasticXS* PBARxsManager;
-  G4ChipsPionPlusElasticXS* PIPxsManager;
-  G4ChipsPionMinusElasticXS* PIMxsManager;
-  G4ChipsKaonPlusElasticXS* KPxsManager;
-  G4ChipsKaonMinusElasticXS* KMxsManager;
-
+  G4double lowestEnergyLimit;
+  G4int nwarn;
 };
+
+inline void G4HadronElastic::SetLowestEnergyLimit(G4double value)
+{
+  lowestEnergyLimit = value;
+}
+
+inline G4double G4HadronElastic::LowestEnergyLimit() const
+{
+  return lowestEnergyLimit;
+}
+
+inline G4double
+G4HadronElastic::ComputeMomentumCMS(const G4ParticleDefinition* p, 
+				    G4double plab, G4int Z, G4int A)
+{
+  G4double m1 = p->GetPDGMass();
+  G4double m12= m1*m1;
+  G4double mass2 = G4NucleiProperties::GetNuclearMass(A, Z);
+  return plab*mass2/std::sqrt(m12 + mass2*mass2 + 2.*mass2*std::sqrt(m12 + plab*plab));
+}
 
 #endif

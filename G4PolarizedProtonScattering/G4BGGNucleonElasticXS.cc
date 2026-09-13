@@ -56,9 +56,7 @@ G4double G4BGGNucleonElasticXS::theGlauberFacN[93] = {0.0};
 G4double G4BGGNucleonElasticXS::theCoulombFacN[93] = {0.0};
 G4int G4BGGNucleonElasticXS::theA[93] = {0};
 
-G4BGGNucleonElasticXS::G4BGGNucleonElasticXS(const G4ParticleDefinition* p)
- : G4VCrossSectionDataSet("BarashenkovGlauberGribov") 
-{
+G4BGGNucleonElasticXS::G4BGGNucleonElasticXS(const G4ParticleDefinition* p): G4VCrossSectionDataSet("BarashenkovGlauberGribov"){
   verboseLevel = 0;
   fGlauberEnergy = 91.*GeV;
   fLowEnergy = 14.0*MeV;
@@ -73,40 +71,12 @@ G4BGGNucleonElasticXS::G4BGGNucleonElasticXS(const G4ParticleDefinition* p)
   if (0 == theA[0]) { Initialise(); } 
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4BGGNucleonElasticXS::~G4BGGNucleonElasticXS(){delete fHadron;}
+G4bool G4BGGNucleonElasticXS::IsElementApplicable(const G4DynamicParticle*, G4int,const G4Material*){return true;}
+G4bool G4BGGNucleonElasticXS::IsIsoApplicable(const G4DynamicParticle*, G4int Z, G4int,  const G4Element*,const G4Material*){return (1 == Z);}
 
-G4BGGNucleonElasticXS::~G4BGGNucleonElasticXS()
-{
-  delete fHadron;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4bool 
-G4BGGNucleonElasticXS::IsElementApplicable(const G4DynamicParticle*, G4int,
-                                           const G4Material*)
-{
-  return true;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4bool G4BGGNucleonElasticXS::IsIsoApplicable(const G4DynamicParticle*, 
-                                              G4int Z, G4int,  
-                                              const G4Element*,
-                                              const G4Material*)
-{
-  return (1 == Z);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4double
-G4BGGNucleonElasticXS::GetElementCrossSection(const G4DynamicParticle* dp,
-                                              G4int ZZ, const G4Material*)
-{
+G4double G4BGGNucleonElasticXS::GetElementCrossSection(const G4DynamicParticle* dp,G4int ZZ, const G4Material*){
   // this method should be called only for Z > 1
-
   G4double cross = 0.0;
   G4int Z = std::min(ZZ, 92);
   G4double ekin = dp->GetKineticEnergy();
@@ -123,53 +93,37 @@ G4BGGNucleonElasticXS::GetElementCrossSection(const G4DynamicParticle* dp,
       cross = fNucleon->GetElasticCrossSection(dp, Z);
     }
   }
-#ifdef G4VERBOSE
-  if (verboseLevel > 1) {
+  //if (verboseLevel > 1) {
     G4cout << "G4BGGNucleonElasticXS::GetElementCrossSection  for "
            << dp->GetDefinition()->GetParticleName()
            << "  Ekin(GeV)= " << dp->GetKineticEnergy()/CLHEP::GeV
            << " in nucleus Z= " << Z << "  A= " << theA[Z]
            << " XS(b)= " << cross/barn 
            << G4endl;
-  }
-#endif
-  return cross;
+  //}
+  return cross*100;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4double
-G4BGGNucleonElasticXS::GetIsoCrossSection(const G4DynamicParticle* dp, 
-                                          G4int, G4int A, 
-                                          const G4Isotope*,
-                                          const G4Element*,
-                                          const G4Material*)
-{
+G4double G4BGGNucleonElasticXS::GetIsoCrossSection(const G4DynamicParticle* dp, G4int, G4int A, const G4Isotope*,const G4Element*,const G4Material*){
   // this method should be called only for Z = 1
   fHadron->HadronNucleonXscNS(dp->GetDefinition(), theProton, 
                               dp->GetKineticEnergy());
   G4double cross = A*fHadron->GetElasticHadronNucleonXsc();
 
-#ifdef G4VERBOSE
-  if (verboseLevel > 1) {
+  //if (verboseLevel > 1) {
     G4cout << "G4BGGNucleonElasticXS::GetIsoCrossSection  for "
            << dp->GetDefinition()->GetParticleName()
            << "  Ekin(GeV)= " << dp->GetKineticEnergy()/CLHEP::GeV
            << " in nucleus  Z=1  A=" << A
            << " XS(b)= " << cross/barn 
            << G4endl;
-  }
-#endif
-  return cross;
+  //}
+  return cross*100;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void G4BGGNucleonElasticXS::BuildPhysicsTable(const G4ParticleDefinition& p)
-{
+void G4BGGNucleonElasticXS::BuildPhysicsTable(const G4ParticleDefinition& p){
   if(&p == theProton || &p == G4Neutron::Neutron()) {
     isProton = (theProton == &p);
-
   } else {
     G4ExceptionDescription ed;
     ed << "This BGG cross section is applicable only to nucleons and not to " 
@@ -178,8 +132,6 @@ void G4BGGNucleonElasticXS::BuildPhysicsTable(const G4ParticleDefinition& p)
                 FatalException, ed);
   }
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void G4BGGNucleonElasticXS::Initialise()
 {
@@ -233,22 +185,15 @@ void G4BGGNucleonElasticXS::Initialise()
   }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4double G4BGGNucleonElasticXS::CoulombFactor(G4double kinEnergy, G4int Z)
-{
+G4double G4BGGNucleonElasticXS::CoulombFactor(G4double kinEnergy, G4int Z){
   return (isProton) ?
     G4NuclearRadii::CoulombFactor(Z, theA[Z], theProton, kinEnergy) : 1.0;  
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void G4BGGNucleonElasticXS::CrossSectionDescription(std::ostream& outFile) const
-{
+void G4BGGNucleonElasticXS::CrossSectionDescription(std::ostream& outFile) const{
   outFile << "The Barashenkov-Glauber-Gribov cross section handles elastic\n"
           << "scattering of protons and neutrons from nuclei using the\n"
           << "Barashenkov parameterization below 91 GeV and the Glauber-Gribov\n"
           << "parameterization above 91 GeV. n";
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
