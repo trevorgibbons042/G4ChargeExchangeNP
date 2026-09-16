@@ -98,13 +98,13 @@ G4bool G4ChargeExchangeNP::IsIsoApplicable(const G4DynamicParticle* particle, G4
 //Output Private Functions
 G4double G4ChargeExchangeNP::GetElementCrossSection(const G4DynamicParticle* dp, G4int Z, const G4Material* mat)  
 {
-    G4double pE = dp->GetTotalEnergy();
+    const G4double kineticEnergy = dp->GetKineticEnergy();
     
-    if (verboseLevel > 1) {G4cout << "fEnergyLimit: "<< fEnergyLimit << " pE: " << pE << " Z: " << Z << G4endl;}
+    if (verboseLevel > 1) {G4cout << "fEnergyLimit: "<< fEnergyLimit << " kineticEnergy: " << kineticEnergy << " Z: " << Z << G4endl;}
     
-    if (Z == 1){return 0;}
-    else if (pE > fEnergyLimit){return GetCrossSection(dp->GetDefinition(), mat, Z, pE);}
-    else{return 0;}
+    if (Z == 1 || kineticEnergy <= fEnergyLimit){return 0.0;}
+    else{return GetCrossSection(dp->GetDefinition(), mat, Z, dp->GetTotalEnergy());}
+    // The interaction cutoff uses kinetic energy; the invariant uses total energy.
 }
 
 //-----------------------------------------------------------
@@ -123,12 +123,11 @@ G4double G4ChargeExchangeNP::GetCrossSection(const G4ParticleDefinition* part, c
     G4double projectileMass = part->GetPDGMass();
     G4double lorentz_s = targetMass*targetMass + 2*pEtot*targetMass + projectileMass*projectileMass;
     
-    if (verboseLevel > 1) {
-    G4cout << "lorentz_s: "<<lorentz_s << G4endl << G4endl; }
+    if (verboseLevel > 1) {G4cout << "lorentz_s: "<<lorentz_s << G4endl << G4endl; }
 
     if(lorentz_s <= (targetMass + projectileMass)*(targetMass + projectileMass)){return 0;}
 
-    //Calculations for Neutron Cross Section (NOT DONE YET)
+    //Calculations for Neutron Cross Section
     if (pdgN == 2112){
         G4double z23 = g4calc->Z23(Z);
 
