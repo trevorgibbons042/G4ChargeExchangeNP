@@ -78,8 +78,8 @@ namespace{
     const G4double pAlpha = .20096;
     const G4double g0 = 0.03129;
     const G4double g1 = -.0084418;
-    const G4double c0 = -7.6817;
-    const G4double c1 = 0.5507;
+    const G4double c0 = 7.6817;
+    const G4double c1 = -0.5507;
 }
 
 //Input Public Functions
@@ -137,31 +137,30 @@ G4double G4ChargeExchangeNP::GetCrossSection(const G4ParticleDefinition* part, c
         G4double Gtotal = std::max(0.0, 1+g0 + g1*logS_S0);
         G4double Ctotal = std::max(1e-16, 1+c0 + c1*logS_S0);
         G4double Afactortotal = pA*g4calc->powA(S_S0, 2*pAlpha-2);
-        G4double Ztotal = z23*g4calc->powZ(Z, -.15*g4calc->powZ(Z,-2/3));
+        G4double Ztotal = z23*g4calc->powZ(Z, -.15*g4calc->powZ(Z,-2.0/3.0));
 
-        G4double sumFactor = (10e-30)*Afactortotal*Ztotal*(1+Gtotal)/(Ctotal);
+        G4double sumFactor = (1e-30)*Afactortotal*Ztotal*(1+Gtotal)/(Ctotal);
 
         if (verboseLevel > 1) {
         G4cout << "S_S0: "<< S_S0 << G4endl;
-        G4cout << "g factor here!: " << Gtotal;
+        G4cout << "g factor here!: " << Gtotal << G4endl;
+        G4cout << "raw C factor: " << 1+c0 + c1*logS_S0 << G4endl;
         G4cout << "c factor here!: " << Ctotal << G4endl;
         G4cout << "A factor here!: " << Afactortotal << G4endl;
         G4cout << "Z factor here!: " << Ztotal << G4endl;
         G4cout << "sum factor here:" << sumFactor << G4endl;
         G4cout  << "return function value: " << fFactor*sumFactor << G4endl;
         }
-        return (fFactor*sumFactor);
+
+        return (fFactor*sumFactor * CLHEP::cm2);
     }
     else{return 0;}
 }
 
 const G4ParticleDefinition* G4ChargeExchangeNP::SampleSecondaryType(const G4ParticleDefinition* part, const G4Material* mat, G4int Z, G4int A, G4double etot){
-    if (verboseLevel > 1) {
-    G4cout << "SampleSecondaryType loaded!";}
-
+    if (verboseLevel > 1) {G4cout << "SampleSecondaryType loaded!";}
+    
     const G4ParticleDefinition* pd = nullptr;
-    G4int pdgN = part->GetPDGEncoding();
-    GetCrossSection(part, mat, Z, etot);
     pd = G4Proton::Proton();
     return pd;
 }

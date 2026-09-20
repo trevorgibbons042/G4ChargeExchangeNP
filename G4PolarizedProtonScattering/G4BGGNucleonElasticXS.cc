@@ -93,15 +93,15 @@ G4double G4BGGNucleonElasticXS::GetElementCrossSection(const G4DynamicParticle* 
       cross = fNucleon->GetElasticCrossSection(dp, Z);
     }
   }
-  //if (verboseLevel > 1) {
+  if (verboseLevel > 1) {
     G4cout << "G4BGGNucleonElasticXS::GetElementCrossSection  for "
            << dp->GetDefinition()->GetParticleName()
            << "  Ekin(GeV)= " << dp->GetKineticEnergy()/CLHEP::GeV
            << " in nucleus Z= " << Z << "  A= " << theA[Z]
            << " XS(b)= " << cross/barn 
            << G4endl;
-  //}
-  return cross*100;
+  }
+  return cross;
 }
 
 G4double G4BGGNucleonElasticXS::GetIsoCrossSection(const G4DynamicParticle* dp, G4int, G4int A, const G4Isotope*,const G4Element*,const G4Material*){
@@ -110,15 +110,15 @@ G4double G4BGGNucleonElasticXS::GetIsoCrossSection(const G4DynamicParticle* dp, 
                               dp->GetKineticEnergy());
   G4double cross = A*fHadron->GetElasticHadronNucleonXsc();
 
-  //if (verboseLevel > 1) {
+  if (verboseLevel > 1) {
     G4cout << "G4BGGNucleonElasticXS::GetIsoCrossSection  for "
            << dp->GetDefinition()->GetParticleName()
            << "  Ekin(GeV)= " << dp->GetKineticEnergy()/CLHEP::GeV
            << " in nucleus  Z=1  A=" << A
            << " XS(b)= " << cross/barn 
            << G4endl;
-  //}
-  return cross*100;
+  }
+  return cross;
 }
 
 void G4BGGNucleonElasticXS::BuildPhysicsTable(const G4ParticleDefinition& p){

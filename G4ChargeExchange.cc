@@ -73,7 +73,7 @@ G4ChargeExchange::G4ChargeExchange(G4ChargeExchangeXS* ptr)
   : G4HadronicInteraction("ChargeExchange"),
     fXSection(ptr), fXSWeightFactor(1.0)
 {
-  lowEnergyLimit = 15.*CLHEP::MeV;
+  lowEnergyLimit = 10.*CLHEP::MeV;
   secID = G4PhysicsModelCatalog::GetModelID( "model_ChargeExchange" );
   nist = G4NistManager::Instance();
   fHandler = new G4ExcitationHandler();
@@ -86,7 +86,6 @@ G4ChargeExchange::G4ChargeExchange(G4ChargeExchangeNP* ptr)
   : G4HadronicInteraction("ChargeExchangeNP"),
     fYSection(ptr), fYSWeightFactor(1.0)
 {
-  lowEnergyLimit = 1.*CLHEP::GeV;
   secID = G4PhysicsModelCatalog::GetModelID( "model_ChargeExchange_NP" );
   nist = G4NistManager::Instance();
   fHandler = new G4ExcitationHandler();
@@ -112,7 +111,8 @@ G4HadFinalState* G4ChargeExchange::ApplyYourself(const G4HadProjectile& aTrack, 
   G4int A = targetNucleus.GetA_asInt();
   G4int Z = targetNucleus.GetZ_asInt();
   
-  if (ekin <= lowEnergyLimit) {return &theParticleChange;}
+  if (ekin <= lowEnergyLimit && fXSection != nullptr) {return &theParticleChange;}
+  else if (ekin <= lowEnergyLimitNP && fYSection != nullptr) {return &theParticleChange;}
 
   theParticleChange.SetWeightChange(fYSWeightFactor);
 
@@ -127,6 +127,7 @@ G4HadFinalState* G4ChargeExchange::ApplyYourself(const G4HadProjectile& aTrack, 
 	   << " A= " << A << " N= " << A - Z
 	   << G4endl;
   }
+
 
   G4double mass1 = G4NucleiProperties::GetNuclearMass(A, Z);
   G4LorentzVector lv0 = aTrack.Get4Momentum();
@@ -282,11 +283,14 @@ if (verboseLevel > 1) {
   G4double phi_init = G4UniformRand()*CLHEP::twopi;
   G4double theta_init = (scalingFactor)*2.0*t/tmax;
   G4double cost = 1. - theta_init;
-  G4cout <<" phi_init: "<< phi_init << G4endl;
+
+  if (verboseLevel > 1) {
+  G4cout <<" phi_init: "<< phi_init << G4endl;}
 
   // if cos(theta) negative, there is a numerical problem
   // instead of making scattering backward, make in this case no scattering
-  if (std::abs(cost) > 1.0) { G4cout << "cost is bigger than 1!" << std::abs(cost) << G4endl; cost = 1.0; flastcost_active = 1;}
+  if (std::abs(cost) > 1.0) { G4cout << "cost is bigger than 1!" << std::abs(cost) << G4endl; cost = 1.0; 
+    flastcost_active = 1;}
   G4double sint = std::sqrt((1.0 - cost)*(1.0 + cost));
 
   if (verboseLevel > 1) {
@@ -294,22 +298,23 @@ if (verboseLevel > 1) {
 	   << " cos(t)=" << cost << " sin(t)=" << sint << G4endl;
   }
 //polarization
-  G4double pbeam = ((aTrack.Get4Momentum()).vect()).mag();
+  const G4ThreeVector pin = (aTrack.Get4Momentum()).vect();
+  G4double pbeam = pin.mag();
   G4ThreeVector polarization = aTrack.GetPolarization();
-  const G4ThreeVector normal = aTrack.GetMomentumDirection().unit();
-  G4ThreeVector projected = polarization - polarization.dot(normal) * normal;
-
-  G4double mag_proj = projected.mag();
-  G4double cos_phi_init = std::cos(phi_init);
-  G4double AnalyzingPower = -(AP_A)*(1-std::exp(1-AP_k*pbeam)*std::sqrt(t)));
+  
+  G4double AnalyzingPower = -(AP_A)*(1-std::exp(1-AP_k*pbeam)*std::sqrt(t));
 
   G4double phi_new;
   while (true)
     {
         phi_new = G4UniformRand()*CLHEP::twopi;
+        G4ThreeVector pout{std::cos(phi_new)*sint, std::sin(phi_new)*sint,cost};
 
-        G4double w = 1.0 + (AnalyzingPower*mag_proj*std::cos(phi_new));
-        G4double wmax = 1.0 + std::abs(AnalyzingPower*mag_proj);
+        G4ThreeVector crossproduct = (pin.cross(pout))/((pin.cross(pout)).mag());
+        G4double dotproduct = polarization.dot(crossproduct);
+
+        G4double w = 1.0 + AnalyzingPower*(dotproduct);
+        G4double wmax = 1.0 + std::abs(AnalyzingPower);
 
         if (G4UniformRand() < w / wmax){break;}
     }
@@ -331,9 +336,6 @@ if (verboseLevel > 1) {
   if (verboseLevel > 1) {
   G4cout <<"pbeam: "<< pbeam << G4endl;
   G4cout <<" Polarization: "<< polarization << G4endl;
-  G4cout <<" Normal Vector: "<< normal << G4endl;
-  G4cout << "projected vector: "<< projected << G4endl;
-  G4cout << "cos(phi): "<< cos_phi_init << G4endl;
   G4cout << "AnalyzingPower: "<< AnalyzingPower << G4endl;
   G4cout << "G4LorentzVector for Proton: "<< lv2 << G4endl;
   G4cout << "Phi_new: "<< phi_new << G4endl;

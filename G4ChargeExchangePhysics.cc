@@ -99,7 +99,7 @@ void G4ChargeExchangePhysics::ConstructProcess()
 {
   auto xs = new G4ChargeExchangeXS();
   xs->SetEnergyLimit(fLowEnergyLimit);
-  xs->SetCrossSectionFactor(10e6);
+  xs->SetCrossSectionFactor(fXSFactor);
   auto model = new G4ChargeExchange(xs);
   G4cout << "ChargeXS set ON!" << G4endl;
 

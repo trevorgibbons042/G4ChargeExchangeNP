@@ -59,6 +59,7 @@ public:
     const G4ParticleDefinition* SampleSecondaryType(const G4ParticleDefinition* part, const G4Material* mat, G4int Z, G4int A, G4double etot);
     G4bool IsElementApplicable(const G4DynamicParticle* particle, G4int Z, const G4Material*) final;
     G4bool IsIsoApplicable(const G4DynamicParticle* particle, G4int Z, G4int A, const G4Element*, const G4Material*) final;
+    
 
     private:
     //Output Private Functions
@@ -68,7 +69,7 @@ public:
     //Variables
     const G4ParticleDefinition* particleNeutron;
     const G4ParticleDefinition* particleProton;
-    G4double fFactor{3e5}, fEnergyLimit{15.0 * CLHEP::MeV};
+    G4double fFactor{1}, fEnergyLimit{10.0 * CLHEP::GeV};
     G4double SpecificSection = 0.0;
     G4Pow* g4calc;
 };

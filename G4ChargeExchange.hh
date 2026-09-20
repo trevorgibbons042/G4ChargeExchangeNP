@@ -69,6 +69,7 @@ public:
 
   G4double SampleT(const G4ParticleDefinition* theSec, const G4int A,
 		   const G4double tmax) const;
+  void SetEnergyLimitNP(G4double val){lowEnergyLimitNP = val;}
 
   G4double GetLastT() const {return fLastT;}
   G4double GetLastCosT() const {return flastcost_active;}
@@ -80,7 +81,8 @@ public:
   G4double GetLastAP() const {return AnalyzingPower_output;}
   G4double GetLastmomentum() const {return momentumCMS_output;}
   G4double GetLasttheta() const {return theta_init_output;}
-  void SetScalingFactor(G4double val){scalingFactor = val;}
+
+  void SetScalingFactor(G4double val){scalingFactor = val*CLHEP::GeV;}
 
 private:
 
@@ -108,6 +110,7 @@ private:
   G4double theta_init_output = -1.0; 
 
   G4double scalingFactor{1};
+  G4double lowEnergyLimitNP = 1*CLHEP::GeV;
 };
 
 #endif

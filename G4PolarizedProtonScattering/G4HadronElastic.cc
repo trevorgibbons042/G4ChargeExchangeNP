@@ -215,7 +215,8 @@ G4double
 G4HadronElastic::SampleInvariantT(const G4ParticleDefinition* part,
 				  G4double mom, G4int, G4int A)
 {
-  G4cout << "Sample Invariant T FROM HADRONELASTIC" << G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl;
+  if (verboseLevel>1) {G4cout << "Sample Invariant T FROM HADRONELASTIC" << G4endl;}
+  
   const G4double plabLowLimit = 400.0*CLHEP::MeV;
   const G4double GeV2 = CLHEP::GeV*CLHEP::GeV;
   const G4double z07in13 = std::pow(0.7, 0.3333333333);
