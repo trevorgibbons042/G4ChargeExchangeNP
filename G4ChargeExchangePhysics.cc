@@ -99,19 +99,22 @@ void G4ChargeExchangePhysics::ConstructProcess()
 {
   auto xs = new G4ChargeExchangeXS();
   xs->SetEnergyLimit(fLowEnergyLimit);
-  xs->SetCrossSectionFactor(fXSFactor);
+  xs->SetPionCrossSectionFactor(fXSFactorPi);
+  xs->SetKaonCrossSectionFactor(fXSFactorK);
+  
   auto model = new G4ChargeExchange(xs);
-  G4cout << "ChargeXS set ON!" << G4endl;
 
   auto sChargeNP = new G4ChargeExchangeNP();
   auto modelNP = new G4ChargeExchange(sChargeNP);
-  G4cout << "ChargeNP set ON!" << G4endl;
 
   if (G4HadronicParameters::Instance()->GetVerboseLevel() > 1) {
-    G4cout << "### ChargeExchangePhysics Construct Processes with the model <" 
-	  << model->GetModelName() << "> and x-section <" 
-	  << xs->GetName() << ">  XSFactor=" << "10e6" << G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl<< G4endl
-	  << G4endl;
+      G4cout << "ChargeXS set ON!" << G4endl;
+      G4cout << "ChargeNP set ON!" << G4endl;
+      
+      G4cout << "### ChargeExchangePhysics Construct Processes with the model <"
+         << model->GetModelName() << "> and x-section <"
+         << xs->GetName() << ">  XSFactorPi=" << fXSFactorPi << ", XSFactorK=" << fXSFactorK
+         << G4endl;
   }
 
   // pi-

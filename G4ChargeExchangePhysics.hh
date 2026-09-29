@@ -55,7 +55,8 @@ public:
 
   void SetLowEnergyLimit(G4double val) { fLowEnergyLimit = val; }
 
-  void SetCrossSectionFactor(G4double val) { fXSFactor = val; }
+  void SetPionCrossSectionFactor(G4double val) { fXSFactorPi = val; }
+  void SetKaonCrossSectionFactor(G4double val) { fXSFactorK = val; }
 
   G4ChargeExchangePhysics& operator=
   (const G4ChargeExchangePhysics& right) = delete;
@@ -66,7 +67,8 @@ private:
   G4ChargeExchangeMessenger* theMessenger;
   
   G4double fLowEnergyLimit;
-  G4double fXSFactor{1.0};
+  G4double fXSFactorPi{1.0};
+  G4double fXSFactorK{1.0};
 };
 
 #endif

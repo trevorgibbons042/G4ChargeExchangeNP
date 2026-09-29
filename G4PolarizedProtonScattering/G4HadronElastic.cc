@@ -94,11 +94,13 @@ G4HadFinalState* G4HadronElastic::ApplyYourself(
   G4int A = targetNucleus.GetA_asInt();
   G4int Z = targetNucleus.GetZ_asInt();
 
+  /*
   if (Z == 1 && A == 1){
     theParticleChange.SetEnergyChange(ekin);
     theParticleChange.SetMomentumChange(0.,0.,1.);
     return &theParticleChange;
   }
+  */
 
   // Scattered particle referred to axis of incident particle
   const G4ParticleDefinition* theParticle = aParticle->GetDefinition();

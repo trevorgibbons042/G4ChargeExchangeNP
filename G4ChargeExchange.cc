@@ -119,7 +119,7 @@ G4HadFinalState* G4ChargeExchange::ApplyYourself(const G4HadProjectile& aTrack, 
   G4int projPDG = part->GetPDGEncoding();
   // for hydrogen targets and positive projectile change exchange
   // is not possible on proton, only on deuteron
-  //if (1 == Z && (211 == projPDG || 321 == projPDG)) { A = 2; } 
+  if (1 == Z && (211 == projPDG || 321 == projPDG)) { A = 2; }
   
   if (verboseLevel > 1) {
     G4cout << "G4ChargeExchange for " << part->GetParticleName()
@@ -278,7 +278,6 @@ if (verboseLevel > 1) {
     t = SampleT(theSecondary, A, tmax);
   } 
   
-  flastcost_active = 0;
 
   G4double phi_init = G4UniformRand()*CLHEP::twopi;
   G4double theta_init = (scalingFactor)*2.0*t/tmax;
@@ -289,8 +288,9 @@ if (verboseLevel > 1) {
 
   // if cos(theta) negative, there is a numerical problem
   // instead of making scattering backward, make in this case no scattering
-  if (std::abs(cost) > 1.0) { G4cout << "cost is bigger than 1!" << std::abs(cost) << G4endl; cost = 1.0; 
-    flastcost_active = 1;}
+  if (std::abs(cost) > 1.0) {
+      G4cout << "cost is bigger than 1!" << std::abs(cost) << G4endl;
+      cost = 1.0;}
   G4double sint = std::sqrt((1.0 - cost)*(1.0 + cost));
 
   if (verboseLevel > 1) {
@@ -324,14 +324,10 @@ if (verboseLevel > 1) {
 		      momentumCMS*cost, e2);
 
   fLastT = t;
-  sint_output = sint;
-  lv2_output_x = lv2.px();
-  lv2_output_y = lv2.py();
-  lv2_output_z = lv2.pz();
+  theta_init_output = theta_init;
   phinew_output = phi_new;
   AnalyzingPower_output = AnalyzingPower;
   momentumCMS_output = momentumCMS;
-  theta_init_output = theta_init;
 
   if (verboseLevel > 1) {
   G4cout <<"pbeam: "<< pbeam << G4endl;

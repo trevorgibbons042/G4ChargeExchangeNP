@@ -74,7 +74,7 @@ GetCrossSection is set to constant value, no calculations yet.
 
 namespace{
     //Lyubovitsky parameterisation from Barton et al. 1976
-    const G4double pA = 1523.8;
+    const G4double pA = 1828.5;
     const G4double pAlpha = .20096;
     const G4double g0 = 0.03129;
     const G4double g1 = -.0084418;
@@ -102,7 +102,7 @@ G4double G4ChargeExchangeNP::GetElementCrossSection(const G4DynamicParticle* dp,
     
     if (verboseLevel > 1) {G4cout << "fEnergyLimit: "<< fEnergyLimit << " kineticEnergy: " << kineticEnergy << " Z: " << Z << G4endl;}
     
-    if (Z == 1 || kineticEnergy <= fEnergyLimit){return 0.0;}
+    if (kineticEnergy <= fEnergyLimit){return 0.0;}
     else{return GetCrossSection(dp->GetDefinition(), mat, Z, dp->GetTotalEnergy());}
     // The interaction cutoff uses kinetic energy; the invariant uses total energy.
 }

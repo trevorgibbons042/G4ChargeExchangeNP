@@ -72,11 +72,6 @@ public:
   void SetEnergyLimitNP(G4double val){lowEnergyLimitNP = val;}
 
   G4double GetLastT() const {return fLastT;}
-  G4double GetLastCosT() const {return flastcost_active;}
-  G4double GetLastSinT() const {return sint_output;}
-  G4double GetLastlv2x() const {return lv2_output_x;}
-  G4double GetLastlv2y() const {return lv2_output_y;}
-  G4double GetLastlv2z() const {return lv2_output_z;}
   G4double GetLastphinew() const {return phinew_output;}
   G4double GetLastAP() const {return AnalyzingPower_output;}
   G4double GetLastmomentum() const {return momentumCMS_output;}
@@ -97,17 +92,12 @@ private:
   G4double lowEnergyLimit; // lowest limit to avoid numerical problems
   G4double fXSWeightFactor = 1.0;
   G4double fYSWeightFactor = 1.0;
+ 
   G4double fLastT = -1.0;
-  G4double flastcost_active = -1.0;
-
-  G4double sint_output = -1.0;
-  G4double lv2_output_x = -1.0;
-  G4double lv2_output_y = -1.0;
-  G4double lv2_output_z = -1.0;
+  G4double theta_init_output = -1.0;
   G4double phinew_output = -1.0;
   G4double AnalyzingPower_output = -1.0;
   G4double momentumCMS_output = -1.0;
-  G4double theta_init_output = -1.0; 
 
   G4double scalingFactor{1};
   G4double lowEnergyLimitNP = 1*CLHEP::GeV;
