@@ -60,14 +60,14 @@
 #include "G4PhysicsModelCatalog.hh"
 #include "G4IonTable.hh"
 #include <algorithm>
+#include <cmath>
 
 namespace
 {
   constexpr G4int maxN = 1000;
-  const G4double AP_A = 0.7079;
-  const G4double AP_k = 0.3860;
+  const G4double AP_A = 0.7079/CLHEP::GeV;;
+  const G4double AP_k = 0.3860/CLHEP::GeV;
 }
-
 
 G4ChargeExchange::G4ChargeExchange(G4ChargeExchangeXS* ptr)
   : G4HadronicInteraction("ChargeExchange"),
@@ -280,11 +280,10 @@ if (verboseLevel > 1) {
   
 
   G4double phi_init = G4UniformRand()*CLHEP::twopi;
-  G4double theta_init = (scalingFactor)*2.0*t/tmax;
-  G4double cost = 1. - theta_init;
+  G4double tRatio = (scalingFactor)*2.0*t/tmax;
+  G4double cost = 1. - tRatio;
 
-  if (verboseLevel > 1) {
-  G4cout <<" phi_init: "<< phi_init << G4endl;}
+  if (verboseLevel > 1) {G4cout <<" phi_init: "<< phi_init << G4endl;}
 
   // if cos(theta) negative, there is a numerical problem
   // instead of making scattering backward, make in this case no scattering
@@ -302,7 +301,7 @@ if (verboseLevel > 1) {
   G4double pbeam = pin.mag();
   G4ThreeVector polarization = aTrack.GetPolarization();
   
-  G4double AnalyzingPower = -(AP_A)*(1-std::exp(1-AP_k*pbeam)*std::sqrt(t));
+  G4double AnalyzingPower = -(AP_A)*(1-std::exp(-(AP_k)*pbeam))*std::sqrt(t);
 
   G4double phi_new;
   while (true)
@@ -323,12 +322,6 @@ if (verboseLevel > 1) {
 		      momentumCMS*sint*std::sin(phi_new),
 		      momentumCMS*cost, e2);
 
-  fLastT = t;
-  theta_init_output = theta_init;
-  phinew_output = phi_new;
-  AnalyzingPower_output = AnalyzingPower;
-  momentumCMS_output = momentumCMS;
-
   if (verboseLevel > 1) {
   G4cout <<"pbeam: "<< pbeam << G4endl;
   G4cout <<" Polarization: "<< polarization << G4endl;
@@ -341,7 +334,6 @@ if (verboseLevel > 1) {
 		      momentumCMS*cost, e2);
   G4cout << "G4LorentzVector for Proton (ORIGINAL!): "<< lvdiff << G4endl;
   }
-  
 
   G4ThreeVector bst = lv.boostVector();
   lv2.boost(bst);
@@ -350,6 +342,19 @@ if (verboseLevel > 1) {
     lv.setE(mass3);
   }
 
+  const auto& toLab = const_cast<G4HadProjectile&>(aTrack).GetTrafoToLab();
+  G4LorentzVector lv2World = toLab * lv2;
+  G4double thetaWorld =std::atan2(std::hypot(lv2World.px(), lv2World.py()),lv2World.pz());
+
+  //G4double phiWorld =std::atan2(lv2World.py(),lv2World.px());
+  //if (phiWorld < 0) {phiWorld += CLHEP::twopi;}
+
+  fLastT = t/(CLHEP::GeV*CLHEP::GeV);
+  //theta_init_output = std::atan2(std::hypot(lv2.px(), lv2.py()),lv2.pz());
+  theta_init_output = thetaWorld;
+  phinew_output = phi_new;
+  AnalyzingPower_output = AnalyzingPower;
+  momentumCMS_output = pbeam;
 
   // prepare secondary particles
   if (verboseLevel > 1) {
