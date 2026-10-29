@@ -65,7 +65,7 @@
 namespace
 {
   constexpr G4int maxN = 1000;
-  const G4double AP_A = 0.7079/CLHEP::GeV;;
+  const G4double AP_A = 0.7079/CLHEP::GeV;
   const G4double AP_k = 0.3860/CLHEP::GeV;
 }
 
@@ -299,9 +299,10 @@ if (verboseLevel > 1) {
 //polarization
   const G4ThreeVector pin = (aTrack.Get4Momentum()).vect();
   G4double pbeam = pin.mag();
-  G4ThreeVector polarization = aTrack.GetPolarization();
+  // the track polarization is in the world frame, pin and pout are in the frame with z along the projectile (G4HadProjectile): rotate it there
+  G4ThreeVector polarization = (const_cast<G4HadProjectile&>(aTrack).GetTrafoToLab().inverse() * G4LorentzVector(aTrack.GetPolarization(), 0.)).vect();
   
-  G4double AnalyzingPower = -(AP_A)*(1-std::exp(-(AP_k)*pbeam))*std::sqrt(t);
+  G4double AnalyzingPower = std::max(-1.0, fAPScale*(-(AP_A)*(1-std::exp(-(AP_k)*pbeam))*std::sqrt(t)));
 
   G4double phi_new;
   while (true)
@@ -335,8 +336,10 @@ if (verboseLevel > 1) {
   G4cout << "G4LorentzVector for Proton (ORIGINAL!): "<< lvdiff << G4endl;
   }
 
+  cmTheta_output = std::acos(cost);
   G4ThreeVector bst = lv.boostVector();
   lv2.boost(bst);
+  modelTheta_output = std::atan2(std::hypot(lv2.px(), lv2.py()), lv2.pz());
   lv -= lv2;
   if (lv.e() < mass3) {
     lv.setE(mass3);
@@ -352,6 +355,7 @@ if (verboseLevel > 1) {
   fLastT = t/(CLHEP::GeV*CLHEP::GeV);
   //theta_init_output = std::atan2(std::hypot(lv2.px(), lv2.py()),lv2.pz());
   theta_init_output = thetaWorld;
+  pinTheta_output = pin.theta();
   phinew_output = phi_new;
   AnalyzingPower_output = AnalyzingPower;
   momentumCMS_output = pbeam;
