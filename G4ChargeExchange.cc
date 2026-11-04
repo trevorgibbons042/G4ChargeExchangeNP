@@ -342,7 +342,6 @@ if (verboseLevel > 1) {
   cmTheta_output = std::acos(cost);
   G4ThreeVector bst = lv.boostVector();
   lv2.boost(bst);
-  modelTheta_output = std::atan2(std::hypot(lv2.px(), lv2.py()), lv2.pz());
   lv -= lv2;
   if (lv.e() < mass3) {
     lv.setE(mass3);
@@ -351,15 +350,16 @@ if (verboseLevel > 1) {
   const auto& toLab = const_cast<G4HadProjectile&>(aTrack).GetTrafoToLab();
   G4LorentzVector lv2World = toLab * lv2;
   G4double thetaWorld =std::atan2(std::hypot(lv2World.px(), lv2World.py()),lv2World.pz());
+  modelTheta_output = thetaWorld; // angle about world z (the angle about the neutron axis is only used above)
 
-  //G4double phiWorld =std::atan2(lv2World.py(),lv2World.px());
-  //if (phiWorld < 0) {phiWorld += CLHEP::twopi;}
+  G4double phiWorld =std::atan2(lv2World.py(),lv2World.px());
+  if (phiWorld < 0) {phiWorld += CLHEP::twopi;}
 
   fLastT = t/(CLHEP::GeV*CLHEP::GeV);
   //theta_init_output = std::atan2(std::hypot(lv2.px(), lv2.py()),lv2.pz());
   theta_init_output = thetaWorld;
   pinTheta_output = pin.theta();
-  phinew_output = phi_new;
+  phinew_output = phiWorld; // azimuth of the proton about world z (phi_new, sampled about the neutron axis, is only used above)
   AnalyzingPower_output = AnalyzingPower;
   momentumCMS_output = pbeam;
 
