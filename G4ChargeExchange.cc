@@ -304,8 +304,11 @@ if (verboseLevel > 1) {
   
   G4double AnalyzingPower = std::max(-1.0, fAPScale*(-(AP_A)*(1-std::exp(-(AP_k)*pbeam))*std::sqrt(t)));
 
-  G4double phi_new;
-  while (true)
+  // sint == 0 (cost rounds to exactly 1 when t/tmax is below double precision, which happens at high beam momentum)
+  // makes pin x pout zero, so w is NaN and the loop would never end. With no scattering angle the azimuth does not
+  // matter, so the uniform draw is kept and the loop is skipped.
+  G4double phi_new = G4UniformRand()*CLHEP::twopi;
+  while (sint > 0.0)
     {
         phi_new = G4UniformRand()*CLHEP::twopi;
         G4ThreeVector pout{std::cos(phi_new)*sint, std::sin(phi_new)*sint,cost};
